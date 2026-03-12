@@ -6,7 +6,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument("arm_planning_group",     default_value="ur_arm"),
+        DeclareLaunchArgument("arm_planning_group",     default_value="ur_manipulator"),
         DeclareLaunchArgument("gripper_planning_group", default_value="gripper"),
         DeclareLaunchArgument("approach_distance_m",    default_value="0.10"),
         DeclareLaunchArgument("place_x", default_value="0.4"),

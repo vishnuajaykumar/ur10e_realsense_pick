@@ -33,7 +33,7 @@ public:
   : Node("pick_place_server",
          rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true))
   {
-    declare_parameter("arm_planning_group", "ur_arm");
+    declare_parameter("arm_planning_group", "ur_manipulator");
     declare_parameter("gripper_planning_group", "gripper");
     declare_parameter("approach_distance_m", 0.10);
     declare_parameter("place_x", 0.4);
