@@ -15,7 +15,7 @@ def generate_launch_description():
 
         Node(
             package="segmentation",
-            executable="yolo_segmentation_node.py",
+            executable="yolo_segmentation_node",
             name="yolo_segmentation_node",
             parameters=[{
                 "model_path": LaunchConfiguration("model_path"),

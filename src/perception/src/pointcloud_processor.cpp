@@ -120,7 +120,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloudProcessor::buildMaskedCloud(
   float depth_scale,
   float min_depth_m, float max_depth_m)
 {
-  auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
   cloud->reserve(static_cast<size_t>(cv::countNonZero(binary_mask)));
 
   for (int v = 0; v < depth_image.rows; ++v) {
@@ -148,7 +148,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloudProcessor::buildMaskedCloud(
   pcl::VoxelGrid<pcl::PointXYZ> vg;
   vg.setInputCloud(cloud);
   vg.setLeafSize(0.005f, 0.005f, 0.005f);  // 5mm voxels
-  auto filtered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr filtered(new pcl::PointCloud<pcl::PointXYZ>());
   vg.filter(*filtered);
 
   // Statistical outlier removal
@@ -156,7 +156,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloudProcessor::buildMaskedCloud(
   sor.setInputCloud(filtered);
   sor.setMeanK(20);
   sor.setStddevMulThresh(1.5);
-  auto cleaned = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cleaned(new pcl::PointCloud<pcl::PointXYZ>());
   sor.filter(*cleaned);
 
   return cleaned;
