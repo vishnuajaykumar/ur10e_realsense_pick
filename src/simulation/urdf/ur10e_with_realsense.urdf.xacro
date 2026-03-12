@@ -1,7 +1,17 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur10e_realsense">
 
-  <!-- UR10e parameters -->
+  <!-- ════════════════════════════════════════════════════════════════
+       UR10e + Robotiq 2F-85 gripper + RealSense D435 (wrist-mounted)
+
+       Mount layout (all attached to tool0):
+         tool0 ──► ur_to_robotiq adapter ──► Robotiq 2F-85 (TCP at ~170mm below tool0)
+         tool0 ──► camera_bracket_link   ──► camera_link
+                   (offset: 0.03m back along arm, 0.08m away from gripper axis)
+                   (pitched 30° down to see workspace under gripper)
+  ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- ── UR10e parameters ─────────────────────────────────────────── -->
   <xacro:arg name="ur_type"              default="ur10e"/>
   <xacro:arg name="prefix"               default=""/>
   <xacro:arg name="use_fake_hardware"    default="false"/>
@@ -10,7 +20,6 @@
   <xacro:arg name="safety_pos_margin"    default="0.15"/>
   <xacro:arg name="safety_k_position"    default="20"/>
 
-  <!-- UR description parameter files -->
   <xacro:arg name="joint_limit_params"
     default="$(find ur_description)/config/$(arg ur_type)/joint_limits.yaml"/>
   <xacro:arg name="kinematics_params"
@@ -20,13 +29,15 @@
   <xacro:arg name="visual_params"
     default="$(find ur_description)/config/$(arg ur_type)/visual_parameters.yaml"/>
 
-  <!-- Include UR macro -->
+  <!-- ── Includes ─────────────────────────────────────────────────── -->
   <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+  <xacro:include filename="$(find robotiq_description)/urdf/ur_to_robotiq_adapter.urdf.xacro"/>
+  <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro"/>
 
-  <!-- World link — fixed base for the robot -->
+  <!-- ── World link ───────────────────────────────────────────────── -->
   <link name="world"/>
 
-  <!-- Instantiate UR10e arm -->
+  <!-- ── UR10e arm ────────────────────────────────────────────────── -->
   <xacro:ur_robot
     prefix="$(arg prefix)"
     joint_limits_parameters_file="$(arg joint_limit_params)"
@@ -39,38 +50,91 @@
     use_fake_hardware="$(arg use_fake_hardware)"
     fake_sensor_commands="$(arg fake_sensor_commands)"/>
 
-  <!-- Fix robot base to world -->
   <joint name="world_to_base" type="fixed">
     <parent link="world"/>
     <child  link="$(arg prefix)base_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       RealSense D435 — mounted at tool0 pointing downward
-  ════════════════════════════════════════════════════════════════════ -->
-  <link name="camera_link">
+  <!-- ── UR-to-Robotiq adapter plate (at tool0 flange) ───────────── -->
+  <xacro:ur_to_robotiq
+    prefix="$(arg prefix)"
+    parent="$(arg prefix)tool0"
+    child="$(arg prefix)robotiq_85_base_link"/>
+
+  <!-- ── Robotiq 2F-85 gripper ────────────────────────────────────── -->
+  <xacro:robotiq_gripper
+    name="RobotiqHandE"
+    prefix="$(arg prefix)"
+    parent="$(arg prefix)robotiq_85_base_link"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    sim_gazebo="true">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:robotiq_gripper>
+
+  <!-- ── Camera bracket (rigid, attached to tool0) ─────────────────
+       Bracket sits 3cm back along the Z axis of tool0 (toward the arm)
+       and 8cm offset along Y (to the side of the gripper axis).
+       This clears the gripper body and gives a clear view of the workspace.
+  ──────────────────────────────────────────────────────────────────── -->
+  <link name="camera_bracket_link">
     <visual>
-      <geometry><box size="0.025 0.090 0.025"/></geometry>
-      <material name="dark_grey"><color rgba="0.2 0.2 0.2 1.0"/></material>
+      <geometry><box size="0.02 0.02 0.10"/></geometry>
+      <material name="bracket_grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
+    </visual>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+    </inertial>
+  </link>
+  <gazebo reference="camera_bracket_link">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+
+  <joint name="camera_bracket_joint" type="fixed">
+    <parent link="$(arg prefix)tool0"/>
+    <child  link="camera_bracket_link"/>
+    <!--
+      xyz: 0.08m offset in Y (side of gripper), -0.03m back in Z (toward arm body)
+      rpy: rotate 30 degrees around X so camera looks down toward workspace
+    -->
+    <origin xyz="0 0.08 -0.03" rpy="-0.5236 0 0"/>
+  </joint>
+
+  <!-- ── RealSense D435 body ──────────────────────────────────────── -->
+  <link name="camera_link">
+    <!-- Main body: 90mm × 25mm × 25mm -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.090 0.025 0.025"/></geometry>
+      <material name="realsense_body"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <!-- Blue lens strip on front face -->
+    <visual>
+      <origin xyz="0.020 0.0 0.014" rpy="0 0 0"/>
+      <geometry><box size="0.060 0.025 0.003"/></geometry>
+      <material name="lens_blue"><color rgba="0.2 0.5 0.9 1.0"/></material>
     </visual>
     <collision>
-      <geometry><box size="0.025 0.090 0.025"/></geometry>
+      <geometry><box size="0.090 0.025 0.025"/></geometry>
     </collision>
     <inertial>
       <mass value="0.072"/>
       <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
     </inertial>
   </link>
+  <gazebo reference="camera_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
 
-  <joint name="camera_mount_joint" type="fixed">
-    <parent link="$(arg prefix)tool0"/>
+  <joint name="camera_link_joint" type="fixed">
+    <parent link="camera_bracket_link"/>
     <child  link="camera_link"/>
-    <!-- 5 cm below flange, rotated so camera Z points forward -->
-    <origin xyz="0 0 0.05" rpy="0 1.5708 0"/>
+    <!-- Camera sits at the end of the bracket, lens facing workspace -->
+    <origin xyz="0 0 -0.05" rpy="0 0 0"/>
   </joint>
 
-  <!-- Optical frame: Z forward, X right, Y down (ROS convention) -->
+  <!-- Optical frame: Z forward, X right, Y down (ROS camera convention) -->
   <link name="camera_color_optical_frame"/>
   <joint name="camera_color_optical_joint" type="fixed">
     <parent link="camera_link"/>
@@ -78,7 +142,7 @@
     <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
   </joint>
 
-  <!-- Gazebo depth camera plugin — publishes on /camera/* matching real driver -->
+  <!-- ── Gazebo depth camera sensor ───────────────────────────────── -->
   <gazebo reference="camera_link">
     <sensor type="depth" name="realsense_d435">
       <always_on>true</always_on>
@@ -90,12 +154,11 @@
           <height>480</height>
           <format>R8G8B8</format>
         </image>
-        <clip><near>0.1</near><far>10.0</far></clip>
+        <clip><near>0.1</near><far>3.0</far></clip>
         <noise><type>gaussian</type><mean>0.0</mean><stddev>0.001</stddev></noise>
       </camera>
       <plugin name="realsense_plugin" filename="libgazebo_ros_camera.so">
         <ros>
-          <!-- Publish directly on /camera/color/* and /camera/aligned_depth_to_color/* -->
           <namespace>/camera</namespace>
           <remapping>realsense_d435/image_raw:=color/image_raw</remapping>
           <remapping>realsense_d435/camera_info:=color/camera_info</remapping>
@@ -105,7 +168,7 @@
         <camera_name>realsense_d435</camera_name>
         <frame_name>camera_color_optical_frame</frame_name>
         <min_depth>0.1</min_depth>
-        <max_depth>10.0</max_depth>
+        <max_depth>3.0</max_depth>
       </plugin>
     </sensor>
   </gazebo>
