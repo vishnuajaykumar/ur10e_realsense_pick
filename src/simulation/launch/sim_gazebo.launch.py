@@ -25,7 +25,8 @@ import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
-    DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, TimerAction
+    DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription,
+    SetEnvironmentVariable, TimerAction
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
@@ -62,7 +63,8 @@ def generate_launch_description():
                               "ur10e_with_realsense.urdf.xacro"]),
         " ur_type:=", ur_type,
         " prefix:=", prefix,
-        " use_fake_hardware:=false",
+        " use_fake_hardware:=true",
+        " fake_sensor_commands:=true",
     ]), value_type=str)
     robot_description = {"robot_description": robot_description_content}
 
@@ -72,7 +74,7 @@ def generate_launch_description():
         " ",
         PathJoinSubstitution([FindPackageShare("ur_moveit_config"), "srdf",
                               "ur.srdf.xacro"]),
-        " name:=ur prefix:=", prefix,
+        " name:=ur10e_realsense prefix:=", prefix,
     ]), value_type=str)
     robot_description_semantic = {
         "robot_description_semantic": robot_description_semantic_content
@@ -154,9 +156,26 @@ def generate_launch_description():
         ],
     )
 
-    # ── 4. Controllers ─────────────────────────────────────────────────────
+    # ── 4. ros2_control_node + controllers ────────────────────────────────
+    # Run standalone (not via Gazebo plugin) — avoids GPIO parse errors
+    ros2_control_node = TimerAction(
+        period=5.0,
+        actions=[
+            Node(
+                package="controller_manager",
+                executable="ros2_control_node",
+                parameters=[
+                    robot_description,
+                    PathJoinSubstitution([
+                        FindPackageShare("simulation"), "config", "sim_controllers.yaml"
+                    ]),
+                ],
+                output="screen",
+            )
+        ],
+    )
     spawn_jsb = TimerAction(
-        period=6.0,
+        period=8.0,
         actions=[
             ExecuteProcess(
                 cmd=["ros2", "control", "load_controller",
@@ -166,7 +185,7 @@ def generate_launch_description():
         ],
     )
     spawn_jtc = TimerAction(
-        period=8.0,
+        period=10.0,
         actions=[
             ExecuteProcess(
                 cmd=["ros2", "control", "load_controller",
@@ -221,6 +240,12 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        # Must be first — sets env for all child processes including gzserver
+        SetEnvironmentVariable(
+            "GAZEBO_MODEL_PATH",
+            "/usr/share/gazebo-11/models:/usr/local/share/gazebo-11/models"
+        ),
+
         DeclareLaunchArgument("ur_type",     default_value="ur10e"),
         DeclareLaunchArgument("prefix",      default_value=""),
         DeclareLaunchArgument("paused",      default_value="false"),
@@ -229,6 +254,7 @@ def generate_launch_description():
         gazebo,
         robot_state_publisher,
         spawn_robot,
+        ros2_control_node,
         spawn_jsb,
         spawn_jtc,
         move_group,
