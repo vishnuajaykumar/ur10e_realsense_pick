@@ -90,9 +90,11 @@ def generate_launch_description():
         [FindPackageShare("simulation"), "worlds", "pick_world.world"]
     )
 
+    # Run gzserver ONLY (no gzclient GUI) — avoids gzclient crash that kills gzserver.
+    # The depth camera plugin publishes on gzserver side; we use RViz for visualization.
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
-            PathJoinSubstitution([FindPackageShare("gazebo_ros"), "launch", "gazebo.launch.py"])
+            PathJoinSubstitution([FindPackageShare("gazebo_ros"), "launch", "gzserver.launch.py"])
         ]),
         launch_arguments={"world": world_file, "paused": paused, "verbose": "false"}.items(),
     )
@@ -236,9 +238,6 @@ def generate_launch_description():
     return LaunchDescription([
         SetEnvironmentVariable("GAZEBO_MODEL_PATH",
                                "/usr/share/gazebo-11/models:/usr/local/share/gazebo-11/models"),
-        # Allow Gazebo to resolve package:// URIs for UR + Robotiq meshes
-        SetEnvironmentVariable("GAZEBO_RESOURCE_PATH",
-                               "/opt/ros/foxy/share:/home/vish/ur10e_realsense_pick/install/robotiq_description/share"),
         DeclareLaunchArgument("ur_type",  default_value="ur10e"),
         DeclareLaunchArgument("prefix",   default_value=""),
         DeclareLaunchArgument("paused",   default_value="false"),

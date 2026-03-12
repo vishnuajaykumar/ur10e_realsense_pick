@@ -99,10 +99,12 @@
     <parent link="$(arg prefix)tool0"/>
     <child  link="camera_bracket_link"/>
     <!--
-      xyz: 0.08m offset in Y (side of gripper), -0.03m back in Z (toward arm body)
-      rpy: rotate 30 degrees around X so camera looks down toward workspace
+      Camera mounted behind the flange, offset to the side for gripper clearance.
+      xyz: -0.06m back in Z (toward arm body), +0.05m to the side (Y)
+      rpy: +30° pitch so camera looks FORWARD along the gripper approach axis
+           (same direction as gripper — toward the object being picked)
     -->
-    <origin xyz="0 0.08 -0.03" rpy="-0.5236 0 0"/>
+    <origin xyz="0 0.05 -0.06" rpy="0.5236 0 0"/>
   </joint>
 
   <!-- ── RealSense D435 body ──────────────────────────────────────── -->

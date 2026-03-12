@@ -11,63 +11,92 @@
       <real_time_factor>1</real_time_factor>
     </physics>
 
-    <!-- ── Cafe table from Gazebo model library ──────────────────────────
-         Surface height: ~0.755m. Placed 0.7m in front of robot base.
+    <!-- ── Work table (inline SDF — no internet required) ────────────
+         Table top: 0.8m × 0.8m × 0.05m, surface at z = 0.8m
+         Pedestal:  0.1m × 0.1m × 0.75m centered at z = 0.375m
+         Placed 0.7m in front of robot base (x=0.7)
     ──────────────────────────────────────────────────────────────────── -->
-    <include>
-      <uri>model://cafe_table</uri>
-      <name>work_table</name>
-      <pose>0.7 0.0 0.0 0 0 0</pose>
-    </include>
+    <!-- Table top: static single-link model at surface height -->
+    <model name="work_table">
+      <static>true</static>
+      <pose>0.7 0.0 0.775 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.80 0.80 0.05</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.80 0.80 0.05</size></box></geometry>
+          <material>
+            <ambient>0.55 0.35 0.15 1</ambient>
+            <diffuse>0.55 0.35 0.15 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
 
-    <!-- ── Pick object 1: red box (on table surface at z=0.755+0.03) ── -->
+    <!-- Table pedestal: separate static model -->
+    <model name="table_pedestal">
+      <static>true</static>
+      <pose>0.7 0.0 0.375 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.10 0.10 0.75</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.10 0.10 0.75</size></box></geometry>
+          <material>
+            <ambient>0.4 0.25 0.10 1</ambient>
+            <diffuse>0.4 0.25 0.10 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── Pick object 1: red box — on table surface (z = 0.8 + 0.03) ── -->
     <model name="pick_object_1">
-      <pose>0.60 0.05 0.815 0 0 0</pose>
-      <link name="box_link">
+      <pose>0.62 0.05 0.83 0 0 0</pose>
+      <link name="link">
+        <inertial><mass>0.1</mass><inertia><ixx>1e-4</ixx><iyy>1e-4</iyy><izz>1e-4</izz></inertia></inertial>
         <collision name="col"><geometry><box><size>0.06 0.06 0.06</size></box></geometry></collision>
         <visual name="vis">
           <geometry><box><size>0.06 0.06 0.06</size></box></geometry>
           <material><ambient>0.8 0.1 0.1 1</ambient><diffuse>0.8 0.1 0.1 1</diffuse></material>
         </visual>
-        <inertial><mass>0.1</mass><inertia><ixx>1e-4</ixx><iyy>1e-4</iyy><izz>1e-4</izz></inertia></inertial>
       </link>
     </model>
 
-    <!-- ── Pick object 2: green cylinder ───────────────────────────── -->
+    <!-- ── Pick object 2: green cylinder ─────────────────────────────── -->
     <model name="pick_object_2">
-      <pose>0.75 -0.10 0.795 0 0 0</pose>
-      <link name="cyl_link">
+      <pose>0.75 -0.08 0.84 0 0 0</pose>
+      <link name="link">
+        <inertial><mass>0.1</mass><inertia><ixx>1e-4</ixx><iyy>1e-4</iyy><izz>1e-4</izz></inertia></inertial>
         <collision name="col"><geometry><cylinder><radius>0.03</radius><length>0.08</length></cylinder></geometry></collision>
         <visual name="vis">
           <geometry><cylinder><radius>0.03</radius><length>0.08</length></cylinder></geometry>
           <material><ambient>0.1 0.8 0.1 1</ambient><diffuse>0.1 0.8 0.1 1</diffuse></material>
         </visual>
-        <inertial><mass>0.1</mass><inertia><ixx>1e-4</ixx><iyy>1e-4</iyy><izz>1e-4</izz></inertia></inertial>
       </link>
     </model>
 
-    <!-- ── Pick object 3: blue sphere ─────────────────────────────── -->
+    <!-- ── Pick object 3: blue sphere ────────────────────────────────── -->
     <model name="pick_object_3">
-      <pose>0.65 -0.12 0.790 0 0 0</pose>
-      <link name="sphere_link">
+      <pose>0.68 -0.10 0.835 0 0 0</pose>
+      <link name="link">
+        <inertial><mass>0.05</mass><inertia><ixx>1e-5</ixx><iyy>1e-5</iyy><izz>1e-5</izz></inertia></inertial>
         <collision name="col"><geometry><sphere><radius>0.035</radius></sphere></geometry></collision>
         <visual name="vis">
           <geometry><sphere><radius>0.035</radius></sphere></geometry>
           <material><ambient>0.1 0.1 0.9 1</ambient><diffuse>0.1 0.1 0.9 1</diffuse></material>
         </visual>
-        <inertial><mass>0.05</mass><inertia><ixx>1e-5</ixx><iyy>1e-5</iyy><izz>1e-5</izz></inertia></inertial>
       </link>
     </model>
 
-    <!-- ── Drop bin ────────────────────────────────────────────────── -->
+    <!-- ── Drop bin ────────────────────────────────────────────────────── -->
     <model name="drop_bin">
       <static>true</static>
-      <pose>-0.3 0.5 0.0 0 0 0</pose>
-      <link name="bin_link">
+      <pose>-0.3 0.5 0.075 0 0 0</pose>
+      <link name="link">
         <collision name="col"><geometry><box><size>0.25 0.25 0.15</size></box></geometry></collision>
         <visual name="vis">
           <geometry><box><size>0.25 0.25 0.15</size></box></geometry>
-          <material><ambient>0.9 0.7 0.0 0.7</ambient><diffuse>0.9 0.7 0.0 0.7</diffuse></material>
+          <material><ambient>0.9 0.7 0.0 0.8</ambient><diffuse>0.9 0.7 0.0 0.8</diffuse></material>
         </visual>
       </link>
     </model>
