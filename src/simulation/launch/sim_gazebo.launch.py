@@ -52,8 +52,9 @@ def generate_launch_description():
     robot_description_semantic_content = ParameterValue(Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
-        PathJoinSubstitution([FindPackageShare("ur_moveit_config"), "srdf", "ur.srdf.xacro"]),
-        " name:=ur prefix:=", prefix,
+        PathJoinSubstitution([FindPackageShare("simulation"), "srdf",
+                              "ur10e_realsense.srdf.xacro"]),
+        " prefix:=", prefix,
     ]), value_type=str)
     robot_description_semantic = {"robot_description_semantic": robot_description_semantic_content}
 
@@ -235,6 +236,9 @@ def generate_launch_description():
     return LaunchDescription([
         SetEnvironmentVariable("GAZEBO_MODEL_PATH",
                                "/usr/share/gazebo-11/models:/usr/local/share/gazebo-11/models"),
+        # Allow Gazebo to resolve package:// URIs for UR + Robotiq meshes
+        SetEnvironmentVariable("GAZEBO_RESOURCE_PATH",
+                               "/opt/ros/foxy/share:/home/vish/ur10e_realsense_pick/install/robotiq_description/share"),
         DeclareLaunchArgument("ur_type",  default_value="ur10e"),
         DeclareLaunchArgument("prefix",   default_value=""),
         DeclareLaunchArgument("paused",   default_value="false"),

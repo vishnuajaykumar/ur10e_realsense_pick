@@ -3,7 +3,7 @@ project(simulation)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY launch worlds urdf config
+install(DIRECTORY launch worlds urdf config srdf
   DESTINATION share/${PROJECT_NAME}
 )
 

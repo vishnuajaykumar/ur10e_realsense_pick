@@ -62,9 +62,9 @@ def generate_launch_description():
     robot_description_semantic_content = ParameterValue(Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
-        PathJoinSubstitution([FindPackageShare("ur_moveit_config"), "srdf",
-                              "ur.srdf.xacro"]),
-        " name:=ur prefix:=", prefix,
+        PathJoinSubstitution([FindPackageShare("simulation"), "srdf",
+                              "ur10e_realsense.srdf.xacro"]),
+        " prefix:=", prefix,
     ]), value_type=str)
     robot_description_semantic = {
         "robot_description_semantic": robot_description_semantic_content
