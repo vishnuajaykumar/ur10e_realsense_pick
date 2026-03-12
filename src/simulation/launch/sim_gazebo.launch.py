@@ -60,7 +60,8 @@ def generate_launch_description():
 
     kinematics_yaml  = load_yaml("ur_moveit_config", "config/kinematics.yaml")
     ompl_yaml        = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
-    controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
+    # Use our custom controllers.yaml so MoveIt connects to joint_trajectory_controller
+    controllers_yaml = load_yaml("simulation", "config/moveit_controllers.yaml")
 
     ompl_pipeline = {"move_group": {
         "planning_plugin": "ompl_interface/OMPLPlanner",
@@ -189,7 +190,7 @@ def generate_launch_description():
     spawn_jtc = TimerAction(period=11.0, actions=[
         ExecuteProcess(
             cmd=["ros2", "control", "load_controller", "--set-state", "start",
-                 "ur_joint_trajectory_controller"],
+                 "joint_trajectory_controller"],
             output="screen",
         )
     ])

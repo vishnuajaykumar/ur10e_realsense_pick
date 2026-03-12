@@ -71,7 +71,8 @@ def generate_launch_description():
     }
 
     # ── MoveIt config ──────────────────────────────────────────────────────
-    kinematics_yaml = load_yaml("ur_moveit_config", "config/kinematics.yaml")
+    kinematics_yaml  = load_yaml("ur_moveit_config", "config/kinematics.yaml")
+    controllers_yaml = load_yaml("simulation", "config/moveit_controllers.yaml")
     ompl_yaml       = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
 
@@ -156,7 +157,7 @@ def generate_launch_description():
     )
     spawn_jtc = ExecuteProcess(
         cmd=["ros2", "control", "load_controller", "--set-state", "start",
-             "ur_joint_trajectory_controller"],
+             "joint_trajectory_controller"],
         output="screen",
     )
 
