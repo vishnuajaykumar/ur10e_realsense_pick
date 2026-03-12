@@ -64,7 +64,7 @@ def generate_launch_description():
         " ",
         PathJoinSubstitution([FindPackageShare("ur_moveit_config"), "srdf",
                               "ur.srdf.xacro"]),
-        " name:=ur10e_realsense prefix:=", prefix,
+        " name:=ur prefix:=", prefix,
     ]), value_type=str)
     robot_description_semantic = {
         "robot_description_semantic": robot_description_semantic_content

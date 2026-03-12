@@ -68,8 +68,8 @@
     name="RobotiqHandE"
     prefix="$(arg prefix)"
     parent="$(arg prefix)robotiq_coupler_link"
-    use_fake_hardware="$(arg use_fake_hardware)"
-    sim_gazebo="true">
+    use_fake_hardware="true"
+    sim_gazebo="false">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:robotiq_gripper>
 
@@ -83,6 +83,9 @@
       <geometry><box size="0.02 0.02 0.10"/></geometry>
       <material name="bracket_grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
     </visual>
+    <collision>
+      <geometry><box size="0.02 0.02 0.10"/></geometry>
+    </collision>
     <inertial>
       <mass value="0.05"/>
       <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
