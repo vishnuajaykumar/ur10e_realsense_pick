@@ -33,6 +33,7 @@ from launch.substitutions import (
 )
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def load_yaml(package_name, file_path):
@@ -54,7 +55,7 @@ def generate_launch_description():
     )
 
     # ── Robot description (Gazebo hardware — no fake) ──────────────────────
-    robot_description_content = Command([
+    robot_description_content = ParameterValue(Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
         PathJoinSubstitution([FindPackageShare("simulation"), "urdf",
@@ -62,17 +63,17 @@ def generate_launch_description():
         " ur_type:=", ur_type,
         " prefix:=", prefix,
         " use_fake_hardware:=false",
-    ])
+    ]), value_type=str)
     robot_description = {"robot_description": robot_description_content}
 
     # ── MoveIt SRDF ────────────────────────────────────────────────────────
-    robot_description_semantic_content = Command([
+    robot_description_semantic_content = ParameterValue(Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
         PathJoinSubstitution([FindPackageShare("ur_moveit_config"), "srdf",
                               "ur.srdf.xacro"]),
         " name:=ur prefix:=", prefix,
-    ])
+    ]), value_type=str)
     robot_description_semantic = {
         "robot_description_semantic": robot_description_semantic_content
     }

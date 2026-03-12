@@ -2,16 +2,15 @@
 <robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur10e_realsense">
 
   <!-- UR10e parameters -->
-  <xacro:arg name="ur_type"           default="ur10e"/>
-  <xacro:arg name="prefix"            default=""/>
-  <xacro:arg name="use_fake_hardware" default="false"/>
+  <xacro:arg name="ur_type"              default="ur10e"/>
+  <xacro:arg name="prefix"               default=""/>
+  <xacro:arg name="use_fake_hardware"    default="false"/>
   <xacro:arg name="fake_sensor_commands" default="false"/>
-  <xacro:arg name="robot_ip"          default="0.0.0.0"/>
-  <xacro:arg name="safety_limits"     default="true"/>
-  <xacro:arg name="safety_pos_margin" default="0.15"/>
-  <xacro:arg name="safety_k_position" default="20"/>
+  <xacro:arg name="safety_limits"        default="true"/>
+  <xacro:arg name="safety_pos_margin"    default="0.15"/>
+  <xacro:arg name="safety_k_position"    default="20"/>
 
-  <!-- UR description paths -->
+  <!-- UR description parameter files -->
   <xacro:arg name="joint_limit_params"
     default="$(find ur_description)/config/$(arg ur_type)/joint_limits.yaml"/>
   <xacro:arg name="kinematics_params"
@@ -21,29 +20,15 @@
   <xacro:arg name="visual_params"
     default="$(find ur_description)/config/$(arg ur_type)/visual_parameters.yaml"/>
 
-  <!-- UR robot driver resources (needed even in fake mode) -->
-  <xacro:arg name="script_filename"
-    default="$(find ur_robot_driver)/resources/ros_control.urscript"/>
-  <xacro:arg name="input_recipe_filename"
-    default="$(find ur_robot_driver)/resources/rtde_input_recipe.txt"/>
-  <xacro:arg name="output_recipe_filename"
-    default="$(find ur_robot_driver)/resources/rtde_output_recipe.txt"/>
-
   <!-- Include UR macro -->
   <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
 
-  <!-- Instantiate UR10e arm, mounted at world origin -->
+  <!-- World link — fixed base for the robot -->
   <link name="world"/>
-  <joint name="world_to_base" type="fixed">
-    <parent link="world"/>
-    <child  link="$(arg prefix)base_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
 
+  <!-- Instantiate UR10e arm -->
   <xacro:ur_robot
-    name="$(arg ur_type)"
-    tf_prefix="$(arg prefix)"
-    parent="world"
+    prefix="$(arg prefix)"
     joint_limits_parameters_file="$(arg joint_limit_params)"
     kinematics_parameters_file="$(arg kinematics_params)"
     physical_parameters_file="$(arg physical_params)"
@@ -52,31 +37,25 @@
     safety_pos_margin="$(arg safety_pos_margin)"
     safety_k_position="$(arg safety_k_position)"
     use_fake_hardware="$(arg use_fake_hardware)"
-    fake_sensor_commands="$(arg fake_sensor_commands)"
-    script_filename="$(arg script_filename)"
-    input_recipe_filename="$(arg input_recipe_filename)"
-    output_recipe_filename="$(arg output_recipe_filename)"
-    robot_ip="$(arg robot_ip)">
+    fake_sensor_commands="$(arg fake_sensor_commands)"/>
+
+  <!-- Fix robot base to world -->
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child  link="$(arg prefix)base_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-  </xacro:ur_robot>
+  </joint>
 
   <!-- ═══════════════════════════════════════════════════════════════
-       RealSense D435 mount — attached to tool0 (end-effector flange)
-       Camera is mounted pointing downward, offset 5 cm in Z
+       RealSense D435 — mounted at tool0 pointing downward
   ════════════════════════════════════════════════════════════════════ -->
   <link name="camera_link">
     <visual>
-      <geometry>
-        <box size="0.025 0.090 0.025"/>
-      </geometry>
-      <material name="dark_grey">
-        <color rgba="0.2 0.2 0.2 1.0"/>
-      </material>
+      <geometry><box size="0.025 0.090 0.025"/></geometry>
+      <material name="dark_grey"><color rgba="0.2 0.2 0.2 1.0"/></material>
     </visual>
     <collision>
-      <geometry>
-        <box size="0.025 0.090 0.025"/>
-      </geometry>
+      <geometry><box size="0.025 0.090 0.025"/></geometry>
     </collision>
     <inertial>
       <mass value="0.072"/>
@@ -87,11 +66,11 @@
   <joint name="camera_mount_joint" type="fixed">
     <parent link="$(arg prefix)tool0"/>
     <child  link="camera_link"/>
-    <!-- 5cm down from flange, rotated so camera Z points forward (away from robot) -->
+    <!-- 5 cm below flange, rotated so camera Z points forward -->
     <origin xyz="0 0 0.05" rpy="0 1.5708 0"/>
   </joint>
 
-  <!-- Optical frame: ROS convention — Z forward, X right, Y down -->
+  <!-- Optical frame: Z forward, X right, Y down (ROS convention) -->
   <link name="camera_color_optical_frame"/>
   <joint name="camera_color_optical_joint" type="fixed">
     <parent link="camera_link"/>
@@ -99,29 +78,21 @@
     <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
   </joint>
 
-  <!-- Gazebo camera sensor plugin (RGB + Depth) -->
+  <!-- Gazebo depth camera plugin — publishes on /camera/* matching real driver -->
   <gazebo reference="camera_link">
     <sensor type="depth" name="realsense_d435">
       <always_on>true</always_on>
       <update_rate>30.0</update_rate>
       <camera name="realsense">
-        <horizontal_fov>1.2217</horizontal_fov>  <!-- ~70 deg, D435 spec -->
+        <horizontal_fov>1.2217</horizontal_fov>
         <image>
           <width>640</width>
           <height>480</height>
           <format>R8G8B8</format>
         </image>
-        <clip>
-          <near>0.1</near>
-          <far>10.0</far>
-        </clip>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.001</stddev>
-        </noise>
+        <clip><near>0.1</near><far>10.0</far></clip>
+        <noise><type>gaussian</type><mean>0.0</mean><stddev>0.001</stddev></noise>
       </camera>
-      <!-- Publishes on same topics as the real RealSense driver -->
       <plugin name="realsense_plugin" filename="libgazebo_ros_camera.so">
         <ros>
           <namespace>camera</namespace>
@@ -132,7 +103,6 @@
         </ros>
         <camera_name>realsense_d435</camera_name>
         <frame_name>camera_color_optical_frame</frame_name>
-        <hack_baseline>0.0</hack_baseline>
         <min_depth>0.1</min_depth>
         <max_depth>10.0</max_depth>
       </plugin>
