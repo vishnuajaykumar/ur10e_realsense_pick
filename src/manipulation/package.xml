@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>manipulation</name>
+  <version>0.1.0</version>
+  <description>
+    C++ MoveIt2 pick-and-place action server for UR10e.
+    Subscribes to /perception/grasp_pose and executes a pick sequence:
+    pre-grasp approach → grasp → retreat → place.
+  </description>
+  <maintainer email="vishnuajaykumar@gmail.com">Vishnu Ajaykumar</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
+  <depend>geometry_msgs</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>control_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>bringup</name>
+  <version>0.1.0</version>
+  <description>Top-level launch files for the UR10e + RealSense pick-and-place system</description>
+  <maintainer email="vishnuajaykumar@gmail.com">Vishnu Ajaykumar</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>realsense_bringup</exec_depend>
+  <exec_depend>segmentation</exec_depend>
+  <exec_depend>perception</exec_depend>
+  <exec_depend>manipulation</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
