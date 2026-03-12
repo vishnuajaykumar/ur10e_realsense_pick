@@ -103,12 +103,22 @@ def generate_launch_description():
         parameters=[robot_description],
     )
 
+    # Publishes joint states for Robotiq finger joints (not driven by trajectory controller)
+    gripper_joint_state_publisher = Node(
+        package="joint_state_publisher",
+        executable="joint_state_publisher",
+        name="gripper_joint_state_publisher",
+        parameters=[robot_description, {"source_list": ["/joint_states"],
+                                         "rate": 50}],
+        output="screen",
+    )
+
     spawn_robot = TimerAction(period=3.0, actions=[
         Node(
             package="gazebo_ros",
             executable="spawn_entity.py",
             arguments=["-topic", "robot_description", "-entity", "ur10e_realsense",
-                       "-x", "0", "-y", "0", "-z", "0"],
+                       "-x", "0.0", "-y", "0.0", "-z", "0.0"],
             output="screen",
         )
     ])
@@ -231,6 +241,7 @@ def generate_launch_description():
 
         gazebo,
         robot_state_publisher,
+        gripper_joint_state_publisher,
         spawn_robot,
         ros2_control_node,
         spawn_jsb,

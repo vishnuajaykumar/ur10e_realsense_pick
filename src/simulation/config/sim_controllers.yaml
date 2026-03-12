@@ -1,12 +1,15 @@
 controller_manager:
   ros__parameters:
-    update_rate: 500  # Hz
+    update_rate: 500
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     ur_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+
+# joint_state_broadcaster publishes ALL joints (arm + gripper) automatically
+# No need to specify joints list — it reads everything from hardware interfaces
 
 ur_joint_trajectory_controller:
   ros__parameters:
